@@ -1,5 +1,8 @@
+
+target:
+
 sample:		sample.cpp
-		g++   -o sample   sample.cpp  -lGL -lGLU -lglut  -lm
+		g++   -o sample   samaple.cpp  -lGL -lGLU -lglut  -lm
 
 
 save:

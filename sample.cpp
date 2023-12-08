@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <ctype.h>
 
@@ -21,6 +22,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "glut.h"
+#include "World.h"
 
 
 //	This is a sample OpenGL / GLUT program
@@ -192,6 +194,8 @@ float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 
+World	world;
+
 
 // function prototypes:
 
@@ -290,6 +294,10 @@ main( int argc, char *argv[ ] )
 	// (do this before checking argc and argv since glutInit might
 	// pull some command line arguments out)
 
+	std::cout << "Generating world..." << std::endl;
+	world.Generate();
+	std::cout << "Done!" << std::endl;
+
 	glutInit( &argc, argv );
 
 	// setup all the graphics stuff:
@@ -348,6 +356,19 @@ Animate( )
 
 
 // draw the complete scene:
+
+void PlaceBlocks() {
+	for (int i = 0; i < 80; i++) {
+		for (int j = 0; j < 80; j++) {
+			// do texture stuff
+
+			glPushMatrix();
+			glTranslatef(i, 0, j);
+			glCallList(BoxList);
+			glPopMatrix();
+		}
+	}
+}
 
 void
 Display( )
@@ -445,7 +466,7 @@ Display( )
 
 	// draw the box object by calling up its display list:
 
-	glCallList( BoxList );
+	PlaceBlocks();
 
 #ifdef DEMO_Z_FIGHTING
 	if( DepthFightingOn != 0 )
@@ -818,9 +839,9 @@ InitLists( )
 	if (DebugOn != 0)
 		fprintf(stderr, "Starting InitLists.\n");
 
-	float dx = BOXSIZE / 2.f;
-	float dy = BOXSIZE / 2.f;
-	float dz = BOXSIZE / 2.f;
+	float dx = 0.5f;
+	float dy = 0.5f;
+	float dz = 0.5f;
 	glutSetWindow( MainWindow );
 
 	// create the object:
