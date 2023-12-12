@@ -19,6 +19,7 @@
 #endif
 
 #include "glew.h"
+#include "stb_image.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "glut.h"
@@ -193,8 +194,10 @@ int		ShadowsOn;				// != 0 means to turn shadows on
 float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
+GLuint	sphere;
 
 World	world;
+unsigned int dirttex;
 
 
 // function prototypes:
@@ -275,11 +278,11 @@ MulArray3(float factor, float a, float b, float c )
 // these are here for when you need them -- just uncomment the ones you need:
 
 //#include "setmaterial.cpp"
-//#include "setlight.cpp"
-//#include "osusphere.cpp"
+#include "setlight.cpp"
+#include "osusphere.cpp"
 //#include "osucone.cpp"
 //#include "osutorus.cpp"
-//#include "bmptotexture.cpp"
+#include "bmptotexture.cpp"
 //#include "loadobjfile.cpp"
 //#include "keytime.cpp"
 //#include "glslprogram.cpp"
@@ -358,14 +361,17 @@ Animate( )
 // draw the complete scene:
 
 void PlaceBlocks() {
-	for (int i = 0; i < 80; i++) {
-		for (int j = 0; j < 80; j++) {
+	for (int i = 0; i < 79; i++) {
+		for (int j = 0; j < 79; j++) {
 			// do texture stuff
-
-			glPushMatrix();
-			glTranslatef(i, 0, j);
-			glCallList(BoxList);
-			glPopMatrix();
+			for (int k = 0; k < 16; k++) {
+				if (world.GetBlock(i, j, k)->type != Block::Type::none) {
+					glPushMatrix();
+					glTranslatef(i, k, j);
+					glCallList(BoxList);
+					glPopMatrix();
+				}
+			}
 		}
 	}
 }
@@ -462,11 +468,13 @@ Display( )
 	// since we are using glScalef( ), be sure the normals get unitized:
 
 	glEnable( GL_NORMALIZE );
+	glEnable(GL_TEXTURE_2D);
 
-
-	// draw the box object by calling up its display list:
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	PlaceBlocks();
+
+	glDisable(GL_TEXTURE_2D);
 
 #ifdef DEMO_Z_FIGHTING
 	if( DepthFightingOn != 0 )
@@ -824,6 +832,15 @@ InitGraphics( )
 #endif
 
 	// all other setups go here, such as GLSLProgram and KeyTime setups:
+	int width, height, nrChannels;
+	unsigned char* texture = stbi_load("tex/dirt.png", &width, &height, &nrChannels, 0);
+	glGenTextures(1, &dirttex);
+	glBindTexture(GL_TEXTURE_2D, dirttex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
 
 }
 
@@ -848,50 +865,69 @@ InitLists( )
 
 	BoxList = glGenLists( 1 );
 	glNewList( BoxList, GL_COMPILE );
+	glBindTexture(GL_TEXTURE_2D, dirttex);
 
 		glBegin( GL_QUADS );
 
-			glColor3f( 1., 0., 0. );
+			glNormal3f( 1., 0., 0. );
+				glTexCoord2f(0, (float)1 / 3);
+				glVertex3f(  dx, -dy,  dz );
+				glTexCoord2f(0, (float)2 / 3);
+				glVertex3f(  dx, -dy, -dz );
+				glTexCoord2f(0.25, (float)1 / 3);
+				glVertex3f(  dx,  dy, -dz );
+				glTexCoord2f(0.25, (float)2 / 3);
+				glVertex3f(  dx,  dy,  dz );
 
-				glNormal3f( 1., 0., 0. );
-					glVertex3f(  dx, -dy,  dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f(  dx,  dy,  dz );
+			glNormal3f(-1., 0., 0.);
+				glTexCoord2f(0.75, (float)1 / 3);
+				glVertex3f( -dx, -dy,  dz);
+				glTexCoord2f(0.5, (float)1 / 3);
+				glVertex3f( -dx,  dy,  dz );
+				glTexCoord2f(0.5, (float)2 / 3);
+				glVertex3f( -dx,  dy, -dz );
+				glTexCoord2f(0.75, (float)2 / 3);
+				glVertex3f( -dx, -dy, -dz );
 
-				glNormal3f(-1., 0., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f( -dx,  dy, -dz );
-					glVertex3f( -dx, -dy, -dz );
+			glNormal3f(0., 1., 0.);
+				glTexCoord2f(0.5, (float)1 / 3);
+				glVertex3f( -dx,  dy,  dz );
+				glTexCoord2f(0.25, (float)1 / 3);
+				glVertex3f(  dx,  dy,  dz );
+				glTexCoord2f(0.25, (float)2 / 3);
+				glVertex3f(  dx,  dy, -dz );
+				glTexCoord2f(0.5, (float)2 / 3);
+				glVertex3f( -dx,  dy, -dz );
 
-			glColor3f( 0., 1., 0. );
+			glNormal3f(0., -1., 0.);
+				glTexCoord2f(0.75, (float)2 / 3);
+				glVertex3f( -dx, -dy,  dz);
+				glTexCoord2f(0.75, (float)1 / 3);
+				glVertex3f( -dx, -dy, -dz );
+				glTexCoord2f(1., (float)1 / 3);
+				glVertex3f(  dx, -dy, -dz );
+				glTexCoord2f(1., (float)2 / 3);
+				glVertex3f(  dx, -dy,  dz );
 
-				glNormal3f(0., 1., 0.);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f(  dx,  dy,  dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f( -dx,  dy, -dz );
+			glNormal3f(0., 0., 1.);
+				glTexCoord2f(0.25, 0);
+				glVertex3f(-dx, -dy, dz);
+				glTexCoord2f(0.5, 0);
+				glVertex3f( dx, -dy, dz);
+				glTexCoord2f(0.5, (float)1 / 3);
+				glVertex3f( dx,  dy, dz);
+				glTexCoord2f(0.25, (float)1 / 3);
+				glVertex3f(-dx,  dy, dz);
 
-				glNormal3f(0., -1., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx, -dy, -dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx, -dy,  dz );
-
-			glColor3f(0., 0., 1.);
-
-				glNormal3f(0., 0., 1.);
-					glVertex3f(-dx, -dy, dz);
-					glVertex3f( dx, -dy, dz);
-					glVertex3f( dx,  dy, dz);
-					glVertex3f(-dx,  dy, dz);
-
-				glNormal3f(0., 0., -1.);
-					glVertex3f(-dx, -dy, -dz);
-					glVertex3f(-dx,  dy, -dz);
-					glVertex3f( dx,  dy, -dz);
-					glVertex3f( dx, -dy, -dz);
+			glNormal3f(0., 0., -1.);
+				glTexCoord2f(0.25, 1.);
+				glVertex3f(-dx, -dy, -dz);
+				glTexCoord2f(0.25, (float)2 / 3);
+				glVertex3f(-dx,  dy, -dz);
+				glTexCoord2f(0.5, (float)2 / 3);
+				glVertex3f( dx,  dy, -dz);
+				glTexCoord2f(0.5, 1.);
+				glVertex3f( dx, -dy, -dz);
 
 		glEnd( );
 

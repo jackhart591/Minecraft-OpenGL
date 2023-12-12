@@ -8,6 +8,12 @@ Chunk::Chunk() {
 
 		for (int j = 0; j < CHUNK_SIZE; j++) {
 			this->blocks[i][j] = new Block[CHUNK_SIZE]; // blocks[x][y][z]
+
+			for (int k = 0; k < CHUNK_SIZE; k++) {
+				Block none;
+				none.type = Block::Type::none;
+				this->blocks[i][j][k] = none;
+			}
 		}
 	}
 }
@@ -24,12 +30,20 @@ Chunk::~Chunk() {
 	delete[] this->blocks;
 }
 
-void Chunk::SetBlock(int x, int y, int z)
+void Chunk::SetBlock(int x, int y, int z, Block block)
 {
-	this->blocks[x][y][z].setFileName("block");
+	this->blocks[x][y][z] = block;
 }
 
-Block Chunk::GetBlock(int x, int y, int z)
+Block* Chunk::GetBlock(int x, int y, int z)
 {
-	return this->blocks[x][y][z];
+	Block* block;
+	try {
+		block = &this->blocks[x][y][z];
+	}
+	catch (void* e) {
+		block = NULL;
+	}
+
+	return block;
 }
