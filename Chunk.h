@@ -1,7 +1,6 @@
 #pragma once
-#include <map>
-#include <tuple>
 #include <stdexcept>
+#include "Vector.h"
 #include "Block.h"
 
 #define CHUNK_SIZE 16
@@ -14,6 +13,6 @@ private:
 public:
 	Chunk();
 	~Chunk();
-	void SetBlock(int, int, int, Block);
-	Block* GetBlock(int, int, int);
+	void SetBlock(Vector<int, 3>, Block);
+	Block* GetBlock(Vector<int, 3>);
 };

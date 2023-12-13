@@ -1,8 +1,6 @@
 #include "World.h"
 
 World::World() {
-	this->chunks = new Chunk**[5];
-
 	Block dirt;
 	dirt.type = Block::Type::dirt;
 	dirt.setFileName("block");
@@ -13,6 +11,17 @@ World::World() {
 	blocks.push_back(none);
 }
 
+World::~World() {
+	std::map<Vector3, Chunk*>::iterator it = this->chunks.begin();
+
+	for (; it != this->chunks.end(); it++) {
+		if (it->second != NULL) {
+			delete it->second;
+			it->second = NULL;
+		}
+	}
+}
+
 void World::Generate()
 {
 
@@ -20,12 +29,11 @@ void World::Generate()
 	float freq = 1;
 	float amp = 1;
 
-	const int GRID_SIZE = 400;
+	const int GRID_SIZE = 1000;
 
 	for (int i = 0; i < 5; i++) {
-		this->chunks[i] = new Chunk*[5];
 		for (int j = 0; j < 5; j++) {
-			this->chunks[i][j] = new Chunk[1];
+			this->chunks[Vector3{ i, j, 0 }] = new Chunk;
 			for (int x = 0; x < 16; x++) {
 				for (int y = 0; y < 16; y++) {
 
@@ -45,21 +53,30 @@ void World::Generate()
 						val = 15;
 					}
 
-					this->chunks[i][j][0].SetBlock(x, y, (int)val, blocks[0]);
+					// Set surface
+					this->chunks[Vector<int, 3>{ i, j, 0 }]->SetBlock(Vector3{x, y, (int)val}, blocks[0]);
+
+					for (int z = (int)val; z >= 0; --z) {
+						this->chunks[Vector3{ i, j, 0 }]->SetBlock(Vector3{x, y, z}, blocks[0]);
+					}
 				}
 			}
 		}
 	}
 }
 
-Block* World::GetBlock(int x, int y, int z)
+void World::defineChunk(int i, int j, int k) {
+
+}
+
+Block* World::GetBlock(Vector3 pos)
 {
-	Chunk* chunk = &this->chunks[x / 16][y / 16][z / 16];
-	Block* block = chunk->GetBlock(x % 16, y % 16, z % 16);
+	Chunk* chunk = this->chunks[Vector3{ pos.x() / 16, pos.y() / 16, pos.z() / 16 }];
+	Block* block = chunk->GetBlock(Vector3{ pos.x() % 16, pos.y() % 16, pos.z() % 16});
 	return block;
 }
 
-World::vector2 World::randomGradient(int ix, int iy) {
+Vector<float, 2> World::randomGradient(int ix, int iy) {
 	// No precomputed gradients mean this works for any number of grid coordinates
 	const unsigned w = 8 * sizeof(unsigned);
 	const unsigned s = w / 2;
@@ -74,9 +91,9 @@ World::vector2 World::randomGradient(int ix, int iy) {
 	float random = a * (3.14159265 / ~(~0u >> 1)); // in [0, 2*Pi]
 
 	// Create the vector from the angle
-	vector2 v;
-	v.x = sin(random);
-	v.y = cos(random);
+	Vector<float, 2> v;
+	v[0] = sin(random);
+	v[1] = cos(random);
 
 	return v;
 }
@@ -85,19 +102,19 @@ World::vector2 World::randomGradient(int ix, int iy) {
 float World::dotGridGradient(int ix, int iy, float x, float y) {
 	
 	// Get gradient from integer coordinates
-	World::vector2 gradient = randomGradient(ix, iy);
+	Vector<float, 2> gradient = randomGradient(ix, iy);
 
 	// Compute the distance vector
 	float dx = x - (float)ix;
 	float dy = y - (float)iy;
 
 	// Compute the dot-product
-	return (dx * gradient.x + dy * gradient.y);
+	return (dx * gradient.x() + dy * gradient.y());
 }
 
 // Computes cubic interpolation
 float World::interpolate(float a0, float a1, float w) {
-	return (a1 - a0) * (3. - w * 2.) * w * w + a0;
+	return (a1 - a0) * (3.f - w * 2.f) * w * w + a0;
 }
 
 float World::perlin(float x, float y) {

@@ -278,11 +278,11 @@ MulArray3(float factor, float a, float b, float c )
 // these are here for when you need them -- just uncomment the ones you need:
 
 //#include "setmaterial.cpp"
-#include "setlight.cpp"
-#include "osusphere.cpp"
+//#include "setlight.cpp"
+//#include "osusphere.cpp"
 //#include "osucone.cpp"
 //#include "osutorus.cpp"
-#include "bmptotexture.cpp"
+//#include "bmptotexture.cpp"
 //#include "loadobjfile.cpp"
 //#include "keytime.cpp"
 //#include "glslprogram.cpp"
@@ -365,7 +365,7 @@ void PlaceBlocks() {
 		for (int j = 0; j < 79; j++) {
 			// do texture stuff
 			for (int k = 0; k < 16; k++) {
-				if (world.GetBlock(i, j, k)->type != Block::Type::none) {
+				if (world.GetBlock(Vector3{ i, j , k })->type != Block::Type::none) {
 					glPushMatrix();
 					glTranslatef(i, k, j);
 					glCallList(BoxList);
@@ -404,10 +404,7 @@ Display( )
 
 	GLsizei vx = glutGet( GLUT_WINDOW_WIDTH );
 	GLsizei vy = glutGet( GLUT_WINDOW_HEIGHT );
-	GLsizei v = vx < vy ? vx : vy;			// minimum dimension
-	GLint xl = ( vx - v ) / 2;
-	GLint yb = ( vy - v ) / 2;
-	glViewport( xl, yb,  v, v );
+	glViewport( 0, 0,  vx, vy );
 
 
 	// set the viewing volume:
@@ -419,7 +416,7 @@ Display( )
 	if( NowProjection == ORTHO )
 		glOrtho( -2.f, 2.f,     -2.f, 2.f,     0.1f, 1000.f );
 	else
-		gluPerspective( 70.f, 1.f,	0.1f, 1000.f );
+		gluPerspective(70.f, static_cast<double>(vx) / vy, 0.1f, 1000.f);
 
 	// place the objects into the scene:
 

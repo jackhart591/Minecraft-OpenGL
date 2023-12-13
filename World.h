@@ -1,26 +1,24 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <math.h>
 #include "Chunk.h"
 
 class World {
 	
 private:
-	Chunk*** chunks;
+	std::map<Vector<int, 3>, Chunk*> chunks;
 	std::vector<Block> blocks;
 
-
-	typedef struct {
-		float x, y;
-	} vector2;
-
+	void defineChunk(int, int, int);
 	float perlin(float, float);
 	float dotGridGradient(int, int, float, float);
-	vector2 randomGradient(int, int);
+	Vector<float, 2> randomGradient(int, int);
 	float interpolate(float, float, float);
 
 public:
 	World();
+	~World();
 	void Generate();
-	Block* GetBlock(int, int, int);
+	Block* GetBlock(Vector3);
 };

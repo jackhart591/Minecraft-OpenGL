@@ -30,16 +30,16 @@ Chunk::~Chunk() {
 	delete[] this->blocks;
 }
 
-void Chunk::SetBlock(int x, int y, int z, Block block)
+void Chunk::SetBlock(Vector<int, 3> pos, Block block)
 {
-	this->blocks[x][y][z] = block;
+	this->blocks[pos.x()][pos.y()][pos.z()] = block;
 }
 
-Block* Chunk::GetBlock(int x, int y, int z)
+Block* Chunk::GetBlock(Vector<int, 3> pos)
 {
 	Block* block;
 	try {
-		block = &this->blocks[x][y][z];
+		block = &this->blocks[pos.x()][pos.y()][pos.z()];
 	}
 	catch (void* e) {
 		block = NULL;
