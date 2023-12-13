@@ -7,18 +7,20 @@
 class World {
 	
 private:
-	std::map<Vector<int, 3>, Chunk*> chunks;
+	std::map<Vector3, Chunk*> chunks;
 	std::vector<Block> blocks;
 
 	void defineChunk(int, int, int);
-	float perlin(float, float);
-	float dotGridGradient(int, int, float, float);
-	Vector<float, 2> randomGradient(int, int);
-	float interpolate(float, float, float);
 
 public:
+	// Has to be multiples of 16
+	const int WORLD_LENGTH = 96;
+	const int WORLD_WIDTH = 96;
+	const int WORLD_HEIGHT = 16;
+
 	World();
 	~World();
 	void Generate();
 	Block* GetBlock(Vector3);
+	void SetBlock(Vector3, Block*);
 };

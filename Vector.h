@@ -81,11 +81,23 @@ public:
 	}
 
 	bool operator==(const Vector& other) const {
-		return sum() == other.sum();
+		for (int i = 0; i < N; i++) {
+			if (this->elems[i] != other->elems[i]) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	bool operator!=(const Vector& other) const {
-		return sum() != other.sum();
+		for (int i = 0; i < N; i++) {
+			if (this->elems[i] != other->elems[i]) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	// Accessors for x, y, z

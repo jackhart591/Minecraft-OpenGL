@@ -361,13 +361,12 @@ Animate( )
 // draw the complete scene:
 
 void PlaceBlocks() {
-	for (int i = 0; i < 79; i++) {
-		for (int j = 0; j < 79; j++) {
-			// do texture stuff
-			for (int k = 0; k < 16; k++) {
-				if (world.GetBlock(Vector3{ i, j , k })->type != Block::Type::none) {
+	for (int i = -(world.WORLD_WIDTH / 2); i < (world.WORLD_WIDTH / 2); i++) {
+		for (int j = 0; j < world.WORLD_HEIGHT; j++) {
+			for (int k = -(world.WORLD_LENGTH / 2); k < (world.WORLD_LENGTH / 2); k++) {
+				if (world.GetBlock(Vector3{ i, j, k })->type != Block::Type::none) {
 					glPushMatrix();
-					glTranslatef(i, k, j);
+					glTranslatef(i, j, k);
 					glCallList(BoxList);
 					glPopMatrix();
 				}

@@ -1,6 +1,22 @@
-﻿  sample.cpp
-C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(370,25): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(370,22): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(370,19): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+﻿  World.cpp
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(72,18): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(120,26): warning C4554: '>>': check operator precedence for possible error; use parentheses to clarify precedence
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(123,26): warning C4554: '>>': check operator precedence for possible error; use parentheses to clarify precedence
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(125,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(129,12): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\jackh\Documents\School\CS 450\Final-Project\World.cpp(130,12): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+  sample.cpp
+C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(369,25): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(369,22): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\jackh\Documents\School\CS 450\Final-Project\sample.cpp(369,19): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+  Generating Code...
 Block.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
   Sample.vcxproj -> C:\Users\jackh\Documents\School\CS 450\Final-Project\Debug\Sample.exe

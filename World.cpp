@@ -1,14 +1,28 @@
 #include "World.h"
 
+int defineSurfaceLevel(Vector2, float, float, int, int);
+float perlin(float, float);
+
 World::World() {
 	Block dirt;
 	dirt.type = Block::Type::dirt;
 	dirt.setFileName("block");
 	blocks.push_back(dirt);
 
-	Block none;
-	none.type = Block::Type::none;
-	blocks.push_back(none);
+	Chunk* new_chunk = new Chunk;
+	// Define all chunks and assign them to all positions
+	for (int i = -(WORLD_WIDTH / 2); i < (WORLD_WIDTH / 2); i++) {
+		for (int j = 0; j < WORLD_HEIGHT; j++) {
+			for (int k = -(WORLD_LENGTH / 2); k < (WORLD_LENGTH / 2); k++) {
+				if ((i % 16) == 0 && (j % 16) == 0 && (k % 16) == 0)
+					new_chunk = new Chunk;
+
+				for (int addr = 0; addr < 16; addr++) {
+					this->chunks[Vector3{ i + addr, j + addr, k + addr }] = new_chunk;
+				}
+			}
+		}
+	}
 }
 
 World::~World() {
@@ -25,44 +39,41 @@ World::~World() {
 void World::Generate()
 {
 
-	float val = 0;
-	float freq = 1;
-	float amp = 1;
+	float g_freq = 10;
+	float g_amp = 2;
+	int resolution = 12;
 
 	const int GRID_SIZE = 1000;
 
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			this->chunks[Vector3{ i, j, 0 }] = new Chunk;
-			for (int x = 0; x < 16; x++) {
-				for (int y = 0; y < 16; y++) {
+	for (int x = -(WORLD_WIDTH / 2); x < (WORLD_WIDTH / 2); x++) {
+		for (int z = -(WORLD_LENGTH / 2); z < (WORLD_LENGTH / 2); z++) {
+			int y = defineSurfaceLevel(Vector2{ x, z }, g_freq, g_amp, GRID_SIZE, WORLD_HEIGHT);
 
-					float val = 0;
-					float freq = 1;
-					float amp = 1;
-					for (int k = 0; k < 12; k++) {
-						val += perlin(i * x * freq / GRID_SIZE, j * y * freq / GRID_SIZE) * amp;
+			// Set surface
+			this->SetBlock(Vector3{ x, y, z }, &blocks[0]);
 
-						freq *= 2;
-						amp /= 2;
-					}
-
-					val *= 102;
-
-					if (val > 15) {
-						val = 15;
-					}
-
-					// Set surface
-					this->chunks[Vector<int, 3>{ i, j, 0 }]->SetBlock(Vector3{x, y, (int)val}, blocks[0]);
-
-					for (int z = (int)val; z >= 0; --z) {
-						this->chunks[Vector3{ i, j, 0 }]->SetBlock(Vector3{x, y, z}, blocks[0]);
-					}
-				}
+			for (int i = y-1; i >= 0; i--) {
+				this->SetBlock(Vector3{ x, i, z }, &blocks[0]);
 			}
 		}
 	}
+}
+
+int defineSurfaceLevel(Vector2 pos, float freq, float amp, int gridSize, int maxHeight) {
+	float val = 0;
+	for (int k = 0; k < 12; k++) {
+		val += perlin(pos.x() * freq / gridSize, pos.y() * freq / gridSize) * amp;
+
+		freq *= 2;
+		amp /= 2;
+	}
+
+	if (val >= maxHeight) {
+		val = maxHeight-1;
+	}
+	else if (val < 0) { val = 0; }
+
+	return (int)val;
 }
 
 void World::defineChunk(int i, int j, int k) {
@@ -71,12 +82,35 @@ void World::defineChunk(int i, int j, int k) {
 
 Block* World::GetBlock(Vector3 pos)
 {
-	Chunk* chunk = this->chunks[Vector3{ pos.x() / 16, pos.y() / 16, pos.z() / 16 }];
-	Block* block = chunk->GetBlock(Vector3{ pos.x() % 16, pos.y() % 16, pos.z() % 16});
+	Chunk* chunk = this->chunks[pos];
+
+	int x = pos.x() % 16;
+	int y = pos.y() % 16;
+	int z = pos.z() % 16;
+
+	if (x < 0) { x += 16; }
+	if (y < 0) { y += 16; }
+	if (z < 0) { z += 16; }
+
+	Block* block = chunk->GetBlock(Vector3{ x, y, z });
 	return block;
 }
 
-Vector<float, 2> World::randomGradient(int ix, int iy) {
+void World::SetBlock(Vector3 pos, Block* block) {
+	Chunk* chunk = this->chunks[pos];
+
+	int x = pos.x() % 16;
+	int y = pos.y() % 16;
+	int z = pos.z() % 16;
+
+	if (x < 0) { x += 16; }
+	if (y < 0) { y += 16; }
+	if (z < 0) { z += 16; }
+
+	chunk->SetBlock(Vector3{ x, y, z }, *block);
+}
+
+Vector<float, 2> randomGradient(int ix, int iy) {
 	// No precomputed gradients mean this works for any number of grid coordinates
 	const unsigned w = 8 * sizeof(unsigned);
 	const unsigned s = w / 2;
@@ -99,7 +133,7 @@ Vector<float, 2> World::randomGradient(int ix, int iy) {
 }
 
 // Computes the dot product of the distance and gradient vectors
-float World::dotGridGradient(int ix, int iy, float x, float y) {
+float dotGridGradient(int ix, int iy, float x, float y) {
 	
 	// Get gradient from integer coordinates
 	Vector<float, 2> gradient = randomGradient(ix, iy);
@@ -113,11 +147,11 @@ float World::dotGridGradient(int ix, int iy, float x, float y) {
 }
 
 // Computes cubic interpolation
-float World::interpolate(float a0, float a1, float w) {
+float interpolate(float a0, float a1, float w) {
 	return (a1 - a0) * (3.f - w * 2.f) * w * w + a0;
 }
 
-float World::perlin(float x, float y) {
+float perlin(float x, float y) {
 
 	// Determin grid cell corner coordinates
 	int x0 = (int)x;
