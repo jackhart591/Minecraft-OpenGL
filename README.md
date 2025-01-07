@@ -1,7 +1,51 @@
-# Minecraft from Open-GL
-This was a project I completed for my graphics programming class. I recreated the way that Minecraft generates blocks and then used perlin noise to recreate the landscape generation. This document will go over this project at a high level and then dive into development details.
+# Minecraft Recreation Using OpenGL
+
+This project was completed as part of my graphics programming coursework. It showcases a high-level recreation of Minecraft's block generation and terrain creation mechanisms, utilizing OpenGL and Perlin noise. This document provides an overview of the project and dives into its technical implementation.
 
 ## Overview
-To generate blocks, this application will create cubes and then apply a texture. That texture is wrapped around the cube in the same way that Minecraft does, an example of how this looks is shown below. The terrain is processed in Chunks. In Minecraft, Chunks are 16x16 squares of terrain that go from the lowest vertical height to the highest. In my project, Chunks are only 16x16x16; I did this to limit memory used during terrain generation. For each chunk generated, the terrain generation defines a surface level using Perlin Noise and then fills everything below that level. The only supported block is the dirt block, but it has the capability to support multiple types of blocks. 
 
-## Technical 
+The application generates blocks by creating textured cubes. These textures are applied in the same manner as Minecraft. The terrain is divided into Chunks, which in Minecraft represent 16x16 squares of terrain extending from the lowest to the highest vertical height. In this project, Chunks are implemented as 16x16x16 cubes to optimize memory usage during terrain generation. 
+
+Terrain generation utilizes Perlin noise to determine surface levels, filling all blocks below the surface. While the current implementation supports only dirt blocks, the system is extensible to accommodate multiple block types in the future.
+
+![image](https://github.com/user-attachments/assets/bbc0caa6-c17b-47a8-9502-1d337a6a1203)
+
+
+## Implementation Details
+
+This project was developed using an OpenGL template provided by Professor Mike Bailey, accessible [here](https://web.engr.oregonstate.edu/~mjb/cs550/). The core components include the following classes:
+
+- [Block](https://github.com/jackhart591/Minecraft-OpenGL/blob/main/Block.cpp)
+- [Chunk](https://github.com/jackhart591/Minecraft-OpenGL/blob/main/Chunk.cpp)
+- [World](https://github.com/jackhart591/Minecraft-OpenGL/blob/main/World.cpp)
+- [Sample.cpp](https://github.com/jackhart591/Minecraft-OpenGL/blob/main/sample.cpp)
+
+### Key Components
+
+#### **Sample.cpp**
+
+`Sample.cpp` serves as the driver script and abstracts OpenGL functionality away from the other classes. Its primary responsibilities include:
+
+- Initializing OpenGL and setting up the rendering pipeline.
+- Creating the block model and defining how textures are applied to blocks.
+- Managing the dimensions of the rendered world (width, length, and height).
+- Translating block coordinates into world-space positions, allowing other scripts to operate purely in block-based units.
+
+#### **Chunk Class**
+
+The `Chunk` class is responsible for initializing a 16x16x16 section of terrain filled with a default "none" block type, which represents empty space. Key functionalities include:
+
+- Getters and setters for accessing and modifying block data at specific positions.
+- Integration with the `World` class to facilitate terrain generation and rendering.
+
+#### **World Class**
+
+The `World` class manages high-level terrain generation and composition. Its key functionalities include:
+
+- Defining the collection of Chunks required to fill the world.
+- Utilizing Perlin noise to calculate surface levels for terrain.
+- Placing blocks at and below the calculated surface level to create a realistic landscape.
+
+### Additional Notes
+
+The `Block` class was initially designed to support multiple block types. However, as the scope of this project focused on core terrain generation, it remains largely unused in the current implementation.
